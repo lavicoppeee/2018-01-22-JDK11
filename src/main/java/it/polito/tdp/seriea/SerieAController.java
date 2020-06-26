@@ -4,10 +4,14 @@
 
 package it.polito.tdp.seriea;
 
+import java.util.List;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 import it.polito.tdp.seriea.model.Model;
+import it.polito.tdp.seriea.model.Season;
+import it.polito.tdp.seriea.model.SeasonSpecific;
+import it.polito.tdp.seriea.model.Team;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -25,7 +29,7 @@ public class SerieAController {
     private URL location;
 
     @FXML // fx:id="boxSquadra"
-    private ChoiceBox<?> boxSquadra; // Value injected by FXMLLoader
+    private ChoiceBox<Team> boxSquadra; // Value injected by FXMLLoader
 
     @FXML // fx:id="btnSelezionaSquadra"
     private Button btnSelezionaSquadra; // Value injected by FXMLLoader
@@ -41,12 +45,44 @@ public class SerieAController {
 
     @FXML
     void doSelezionaSquadra(ActionEvent event) {
-
+    	this.txtResult.clear();
+    	
+    	Team t=this.boxSquadra.getValue();
+    	
+    	   if(t == null) {
+           	txtResult.clear();
+           	txtResult.appendText("Seleziona una squadra!\n");
+           	return ;
+       	}
+    	   List<Integer> punti=model.getPuntiTot(t);
+    	   
+    	   txtResult.appendText("La squadra "+t+" ha avuto un punteggio nelle stagioni pari a: \n");
+    	   for(Integer p: punti) {
+    			txtResult.appendText(p.toString()+"\n");
+    	   }
     }
 
     @FXML
     void doTrovaAnnataOro(ActionEvent event) {
-
+      this.txtResult.clear();
+    	
+    	Team t=this.boxSquadra.getValue();
+    	
+    	   if(t == null) {
+           	txtResult.clear();
+           	txtResult.appendText("Seleziona una squadra!\n");
+           	return ;
+       	}
+    	   
+    	   this.model.creaGrafo(t);
+    	   txtResult.appendText("Grafo Creato!\n");
+           txtResult.appendText("# Vertici: " + model.nVertici()+ "\n");
+       	   txtResult.appendText("# Archi: " + model.nArchi() + "\n");
+       	
+       	 SeasonSpecific s=this.model.getAnnataDOro();
+       	 
+       	 txtResult.appendText("Annata d'oro della squadra "+t+" è "+s+" con peso "+model.getPesoSGold());
+    	
     }
 
     @FXML
@@ -66,6 +102,7 @@ public class SerieAController {
     
     public void setModel(Model model) {
 		this.model = model;	
+		this.boxSquadra.getItems().addAll(model.getTeam());
 	}
     
 }
