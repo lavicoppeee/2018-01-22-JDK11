@@ -8,6 +8,7 @@ import java.util.List;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.seriea.model.Arco;
 import it.polito.tdp.seriea.model.Model;
 import it.polito.tdp.seriea.model.Season;
 import it.polito.tdp.seriea.model.SeasonSpecific;
@@ -81,13 +82,27 @@ public class SerieAController {
        	
        	 SeasonSpecific s=this.model.getAnnataDOro();
        	 
-       	 txtResult.appendText("Annata d'oro della squadra "+t+" è "+s+" con peso "+model.getPesoSGold());
+       	 txtResult.appendText("Annata d'oro della squadra "+t+" è "+s.toString()+" con peso "+model.getPesoSGold());
     	
     }
 
     @FXML
     void doTrovaCamminoVirtuoso(ActionEvent event) {
-
+    	this.txtResult.clear();
+     	
+     	Team t=this.boxSquadra.getValue();
+     	
+     	   if(t == null) {
+            	txtResult.clear();
+            	txtResult.appendText("Seleziona una squadra!\n");
+            	return ;
+        	}
+     	   
+     	  List<Arco> s= this.model.searchCammino();
+     	  txtResult.appendText("La squadra"+t+"ha cammino più lungo consecutivo:\n");
+     	  for(Arco a:s) {
+     		 txtResult.appendText(a.getS1().getSeason()+" "+a.getPeso()+"\n");
+     	  }
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete

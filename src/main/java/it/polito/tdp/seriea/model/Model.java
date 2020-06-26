@@ -1,6 +1,7 @@
 package it.polito.tdp.seriea.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +20,14 @@ public class Model {
 	private Graph<Season,DefaultWeightedEdge> graph;
 	private Map<Integer, Season> idMap;
 	private List<Season> seasons;
+	private List<Arco> archi;
+	private List<Arco> bestCammino;
+	int bestPeso;
+
+	public void setBestPeso(int bestPeso) {
+		this.bestPeso = bestPeso;
+	}
+
 	SeasonSpecific sGold;
 	
 	public Model() {
@@ -49,6 +58,7 @@ public class Model {
 	public void creaGrafo(Team t) {
 		this.graph=new SimpleDirectedWeightedGraph<>(DefaultWeightedEdge.class);
 		idMap = new HashMap<Integer, Season>();
+		this.archi=new ArrayList<>();
 		
 		dao.getVertici(t,idMap);
 		Graphs.addAllVertices(graph, idMap.values());
@@ -68,10 +78,12 @@ public class Model {
 			if(peso1>peso2) {
 				Double distanza=(double) (peso1-peso2);
 				Graphs.addEdgeWithVertices(graph, s1, s2,distanza);
+				archi.add(new Arco(s1,s2,distanza));
 			}else 
 				if(peso2>peso1) {
 					Double distanza=(double) (peso2-peso1);
 					Graphs.addEdgeWithVertices(graph, s2, s1,distanza);
+					archi.add(new Arco(s1,s2,distanza));
 				}
 			 }
 		  }
@@ -89,22 +101,10 @@ public class Model {
 	public SeasonSpecific getAnnataDOro() {
 		sGold= new SeasonSpecific();
 		int peso=0;
-		int pNew = 0;
 	
-		int in;
-		int out;
-		
 		for(Season s: this.graph.vertexSet()) {
-			in=0;
-			out=0;
 			
-			for(DefaultWeightedEdge edge : this.graph.incomingEdgesOf(s))
-				in += (int) this.graph.getEdgeWeight(edge);
-			
-			for(DefaultWeightedEdge edge : graph.outgoingEdgesOf(s))
-				out += (int) graph.getEdgeWeight(edge);
-				
-				pNew +=(out-in);
+			int pNew=this.getPeso(s);
 				
 			if(pNew>peso) {
 				peso=pNew;
@@ -143,4 +143,56 @@ public class Model {
 		tot=a+d+h;
 		return tot;
 	}
+	
+	private int getPeso(Season s) {
+		int pNew=0;
+		int in=0;
+		int out=0;
+		
+		for(DefaultWeightedEdge edge : this.graph.incomingEdgesOf(s))
+			in += (int) this.graph.getEdgeWeight(edge);
+		
+		for(DefaultWeightedEdge edge : graph.outgoingEdgesOf(s))
+			out += (int) graph.getEdgeWeight(edge);
+			
+			pNew +=(out-in);
+			
+			return pNew;
+	}
+	
+	public List<Arco> searchCammino(){
+		
+		bestCammino=new ArrayList<>();
+		
+		//partire dal grafo
+		List<Arco> parziale=new ArrayList<>();
+		ricorsione(parziale,0);
+		
+		return bestCammino;
+	}
+
+	private void ricorsione(List<Arco> parziale, double i) {
+		
+		
+	for(Arco a:archi) {
+		if(!parziale.contains(a) && a.getPeso()>=i) {
+			
+			parziale.add(a);
+			i=a.getPeso();
+			ricorsione(parziale,i);
+			parziale.remove(a);
+			
+		}	
+	}
+	if(parziale.size()>this.bestCammino.size()){
+		this.bestCammino=new ArrayList<>(parziale);
+	}
+	
+		
+}	
+	
+	
+	
+
+	
 }
